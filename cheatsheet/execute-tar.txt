@@ -1,0 +1,31 @@
+// execute tar.gz linux
+// tar -xvzf /home/username/Downloads/yourfile.tar.gz -C /home/username/Downloads/yourfile.tar.gz
+
+repositories list: /etc/apt/sources.list.d/
+
+
+1.tar xzvf syncthing*.tar.gz
+
+2.cd syncthing*
+
+3.sudo cp syncthing /usr/local/bin
+
+4. cd ~
+   rm -rf syncthing*
+
+5. sudo nano ~/.config/syncthing/config.xml
+
+// check folder storage command linux df -h
+
+/// backup dir /var/backups
+
+sudo nano /etc/init/syncthing.conf
+
+upstart install to run on start
+
+apt-install upstart
+
+
+sysvinit
+
+sudo initctl start syncthing

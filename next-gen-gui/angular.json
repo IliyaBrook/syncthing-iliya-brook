@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1, 
+  "version": 1,
   "newProjectRoot": "projects",
   "projects": {
     "next-gen-gui": {
@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "next-gen-gui"
+    }
+  },
+  "defaultProject": "next-gen-gui",
+  "cli": {
+    "analytics": "44a60969-9dc8-45db-b272-b663b25f5a7b"
+  }
 }
