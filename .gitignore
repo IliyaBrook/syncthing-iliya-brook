@@ -2,6 +2,7 @@
 /stdiscosrv
 syncthing.exe
 stdiscosrv.exe
+/cheatsheet
 *.tar.gz
 *.zip
 *.asc
