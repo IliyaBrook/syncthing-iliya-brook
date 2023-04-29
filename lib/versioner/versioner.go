@@ -12,6 +12,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/syncthing/syncthing/lib/fs"
+	"io"
 	"time"
 
 	"github.com/syncthing/syncthing/lib/config"
@@ -22,6 +24,36 @@ type Versioner interface {
 	GetVersions() (map[string][]FileVersion, error)
 	Restore(filePath string, versionTime time.Time) error
 	Clean(context.Context) error
+}
+
+// brook: copy file
+func copyFile(copyRangeMethod fs.CopyRangeMethod, srcFs, dstFs fs.Filesystem, srcPath, dstPath string) error {
+	srcFile, err := srcFs.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := dstFs.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// brook making a backup of the restored file func
+func backupFile(copyRangeMethod fs.CopyRangeMethod, srcFs, dstFs fs.Filesystem, filePath string) error {
+	tag := time.Now().Format(TimeFormat)
+	taggedName := TagFilename(filePath, tag)
+
+	return copyFile(copyRangeMethod, srcFs, dstFs, filePath, taggedName)
 }
 
 type FileVersion struct {
@@ -40,6 +72,8 @@ const (
 	TimeFormat = "20060102-150405"
 	timeGlob   = "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]" // glob pattern matching TimeFormat
 )
+
+
 
 func New(cfg config.FolderConfiguration) (Versioner, error) {
 	fac, ok := factories[cfg.Versioning.Type]

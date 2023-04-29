@@ -33,6 +33,7 @@ angular.module('syncthing.core')
         $scope.reportData = {};
         $scope.reportDataPreview = '';
         $scope.reportPreview = false;
+        $scope.deletedFileNames = [];
         $scope.folders = {};
         $scope.seenError = '';
         $scope.upgradeInfo = null;
@@ -81,6 +82,17 @@ angular.module('syncthing.core')
             bytes: 0,
             directories: 0,
             files: 0
+        };
+
+
+
+        $scope.getDeletedFileNames = function () {
+            return $http.get(urlbase + '/folder/deletedFileNames?folder=' + encodeURIComponent($scope.restoreVersions.folder))
+                .then(function (response) {
+                    return response.data.deletedFileNames;
+                }, function () {
+                    return [];
+                });
         };
 
         $(window).bind('beforeunload', function () {
@@ -2682,7 +2694,12 @@ angular.module('syncthing.core')
                             $scope.restoreVersions.versions = data;
                         });
 
-                    $q.all([dataReceived, modalShown.promise]).then(function () {
+                    var deletedFileNamesReceived = $scope.getDeletedFileNames()
+                        .then(function (deletedFileNames) {
+                            $scope.deletedFileNames = deletedFileNames;
+                        });
+
+                    $q.all([dataReceived, deletedFileNamesReceived, modalShown.promise]).then(function () {
                         $timeout(function () {
                             if (closed) {
                                 resetRestoreVersions();
@@ -2735,6 +2752,10 @@ angular.module('syncthing.core')
                                     var scope = $rootScope.$new(true);
                                     scope.key = node.key;
                                     scope.restoreVersions = $scope.restoreVersions;
+                                    scope.deletedFileNames = $scope.deletedFileNames;
+                                    scope.isFileDeleted = function (key) {
+                                        return scope.deletedFileNames.some((elem) => elem.replace(/\\/g, '/') === key);
+                                    }
 
                                     $tdList.eq(1).html(
                                         $compile(template)(scope)
@@ -2820,14 +2841,13 @@ angular.module('syncthing.core')
             if (!$scope.restoreVersions.tree) return;
 
             $scope.restoreVersions.tree.filterNodes(function (node) {
+                const inputText = $scope.restoreVersions.filters.text;
+                const key = node.key;
                 if (node.folder) return false;
-                if ($scope.restoreVersions.filters.text && node.key.indexOf($scope.restoreVersions.filters.text) < 0) {
+                if (inputText && !key.match(new RegExp(inputText, 'i'))) {
                     return false;
                 }
-                if ($scope.restoreVersions.filterVersions(node.data.versions).length == 0) {
-                    return false;
-                }
-                return true;
+                return $scope.restoreVersions.filterVersions(node.data.versions).length !== 0;
             });
         });
 
@@ -2878,7 +2898,7 @@ angular.module('syncthing.core')
             });
         };
 
-        $scope.downloadProgressEnabled = function() {
+        $scope.downloadProgressEnabled = function () {
             return $scope.config.options &&
                 $scope.config.options.progressUpdateIntervalS > 0 &&
                 $scope.folders[$scope.neededFolder] &&
@@ -2912,7 +2932,7 @@ angular.module('syncthing.core')
         };
 
         $scope.hasReceiveOnlyChanged = function (folderCfg) {
-            if (!folderCfg || folderCfg.type !== ["receiveonly",  "receiveencrypted"].indexOf(folderCfg.type) === -1) {
+            if (!folderCfg || folderCfg.type !== ["receiveonly", "receiveencrypted"].indexOf(folderCfg.type) === -1) {
                 return false;
             }
             var counts = $scope.model[folderCfg.id];
@@ -2921,8 +2941,8 @@ angular.module('syncthing.core')
 
         $scope.revertOverride = function () {
             $http.post(
-                urlbase + "/db/" + $scope.revertOverrideParams.operation +"?folder="
-                +encodeURIComponent($scope.revertOverrideParams.folderID));
+                urlbase + "/db/" + $scope.revertOverrideParams.operation + "?folder="
+                + encodeURIComponent($scope.revertOverrideParams.folderID));
         };
 
         $scope.revertOverrideConfirmationModal = function (type, folderID) {
@@ -3172,7 +3192,8 @@ angular.module('syncthing.core')
             $scope.metricRates = !$scope.metricRates;
             try {
                 window.localStorage["metricRates"] = $scope.metricRates;
-            } catch (exception) { }
+            } catch (exception) {
+            }
         };
 
         $scope.sizeOf = function (dict) {
@@ -3352,7 +3373,7 @@ angular.module('syncthing.core')
                 return;
             }
 
-            if (entries.length > 0 && entries[entries.length -1].match === '*') {
+            if (entries.length > 0 && entries[entries.length - 1].match === '*') {
                 if (newEntry.match !== '*') {
                     entries.splice(entries.length - 1, 0, newEntry);
                 }
@@ -3388,7 +3409,7 @@ angular.module('syncthing.core')
             if (filterEntries.every(function (entry) {
                 return entry.permit === false;
             })) {
-                return  $translate.instant('Hint: only deny-rules detected while the default is deny. Consider adding "permit any" as last rule.');
+                return $translate.instant('Hint: only deny-rules detected while the default is deny. Consider adding "permit any" as last rule.');
             }
 
             return '';
@@ -3406,7 +3427,7 @@ angular.module('syncthing.core')
                 return $translate.instant('permit');
             }
             // If any rule is present and the last entry isn't a wild-card, the default is deny.
-            if (filterEntries[filterEntries.length -1].match !== '*') {
+            if (filterEntries[filterEntries.length - 1].match !== '*') {
                 return $translate.instant('deny');
             }
 
@@ -3433,7 +3454,7 @@ angular.module('syncthing.core')
             },
             link: function (scope, elem, attrs) {
                 var plain = false;
-                scope.togglePasswordVisibility = function() {
+                scope.togglePasswordVisibility = function () {
                     scope.plain = !scope.plain;
                 };
             },

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/syncthing/syncthing/lib/config"
@@ -130,6 +131,14 @@ func (v *staggered) GetVersions() (map[string][]FileVersion, error) {
 }
 
 func (v *staggered) Restore(filepath string, versionTime time.Time) error {
+	now := time.Now()
+	dateFormat := now.Format("20060102")
+	timeFormat := now.Format("150405")
+	currentFileBackup := fmt.Sprintf("%s_%s_%s.txt", strings.TrimSuffix(filepath, ".txt"), dateFormat, timeFormat)
+	err := v.folderFs.Copy(filepath, currentFileBackup)
+	if err != nil {
+		return restoreFile(v.copyRangeMethod, v.versionsFs, v.folderFs, filepath, versionTime, TagFilename)
+	}
 	return restoreFile(v.copyRangeMethod, v.versionsFs, v.folderFs, filepath, versionTime, TagFilename)
 }
 
