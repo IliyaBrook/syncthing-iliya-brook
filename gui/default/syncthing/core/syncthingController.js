@@ -2841,14 +2841,13 @@ angular.module('syncthing.core')
             if (!$scope.restoreVersions.tree) return;
 
             $scope.restoreVersions.tree.filterNodes(function (node) {
+                const inputText = $scope.restoreVersions.filters.text;
+                const key = node.key;
                 if (node.folder) return false;
-                if ($scope.restoreVersions.filters.text && node.key.indexOf($scope.restoreVersions.filters.text) < 0) {
+                if (inputText && !key.match(new RegExp(inputText, 'i'))) {
                     return false;
                 }
-                if ($scope.restoreVersions.filterVersions(node.data.versions).length == 0) {
-                    return false;
-                }
-                return true;
+                return $scope.restoreVersions.filterVersions(node.data.versions).length !== 0;
             });
         });
 
@@ -2933,7 +2932,7 @@ angular.module('syncthing.core')
         };
 
         $scope.hasReceiveOnlyChanged = function (folderCfg) {
-            if (!folderCfg || folderCfg.type !== ["receiveonly",  "receiveencrypted"].indexOf(folderCfg.type) === -1) {
+            if (!folderCfg || folderCfg.type !== ["receiveonly", "receiveencrypted"].indexOf(folderCfg.type) === -1) {
                 return false;
             }
             var counts = $scope.model[folderCfg.id];
@@ -2942,8 +2941,8 @@ angular.module('syncthing.core')
 
         $scope.revertOverride = function () {
             $http.post(
-                urlbase + "/db/" + $scope.revertOverrideParams.operation +"?folder="
-                +encodeURIComponent($scope.revertOverrideParams.folderID));
+                urlbase + "/db/" + $scope.revertOverrideParams.operation + "?folder="
+                + encodeURIComponent($scope.revertOverrideParams.folderID));
         };
 
         $scope.revertOverrideConfirmationModal = function (type, folderID) {
@@ -3373,7 +3372,7 @@ angular.module('syncthing.core')
                 return;
             }
 
-            if (entries.length > 0 && entries[entries.length -1].match === '*') {
+            if (entries.length > 0 && entries[entries.length - 1].match === '*') {
                 if (newEntry.match !== '*') {
                     entries.splice(entries.length - 1, 0, newEntry);
                 }

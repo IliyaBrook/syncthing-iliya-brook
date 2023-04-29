@@ -386,7 +386,7 @@
                   </div>
                 </h4>
               </button>
-              <div id="folder-{{$index}}" class="panel-collapse collapse">
+              <div id="folder-{{$index}}" class="panel-collapse collapse in">
                 <div class="panel-body">
                   <table class="table table-condensed table-striped table-auto">
                     <tbody>
@@ -639,7 +639,7 @@
                 <div class="panel-title-text">{{deviceName(deviceCfg)}}</div>
               </h4>
             </button>
-            <div id="device-this" class="panel-collapse collapse in">
+            <div id="device-this" class="panel-collapse collapse">
               <div class="panel-body">
                 <table class="table table-condensed table-striped table-auto">
                   <tbody>
@@ -731,7 +731,7 @@
           <h3><span translate>Remote Devices</span> <span ng-if="otherDevices().length > 1"> ({{otherDevices().length}})</span></h3>
           <div class="panel-group" id="devices">
             <div class="panel panel-default" ng-repeat="deviceCfg in otherDevices()">
-              <button class="btn panel-heading" data-toggle="collapse" data-parent="#devices" data-target="#device-{{$index}}" aria-expanded="false">
+              <button class="btn panel-heading" data-toggle="collapse" data-parent="#devices" data-target="#device-{{$index}}" aria-expanded="true">
                 <div class="panel-progress" ng-show="deviceStatus(deviceCfg) == 'syncing'" ng-attr-style="width: {{completion[deviceCfg.deviceID]._total | percent}}"></div>
                 <h4 class="panel-title">
                   <identicon class="panel-icon" data-value="deviceCfg.deviceID"></identicon>
@@ -939,21 +939,6 @@
   </div> <!-- /ng-cloak -->
 
   <!-- Bottom bar -->
-
-  <nav class="navbar navbar-default navbar-fixed-bottom">
-    <div class="container">
-      <ul class="nav navbar-nav">
-        <li><a class="navbar-link" href="https://syncthing.net/" target="_blank"><span class="fas fa-home"></span>&nbsp;<span translate>Home page</span></a></li>
-        <li><a class="navbar-link" href="{{docsURL()}}" target="_blank"><span class="fas fa-book"></span>&nbsp;<span translate>Documentation</span></a></li>
-        <li><a class="navbar-link" href="https://forum.syncthing.net" target="_blank"><span class="fas fa-question-circle"></span>&nbsp;<span translate>Support</span></a></li>
-        <li><a class="navbar-link" href="https://data.syncthing.net/" target="_blank"><span class="fas fa-bar-chart"></span>&nbsp;<span translate>Statistics</span></a></li>
-        <li><a class="navbar-link" href="https://github.com/syncthing/syncthing/releases" target="_blank"><span class="far fa-file-alt"></span>&nbsp;<span translate>Changelog</span></a></li>
-        <li><a class="navbar-link" href="https://github.com/syncthing/syncthing/issues" target="_blank"><span class="fas fa-bug"></span>&nbsp;<span translate>Bugs</span></a></li>
-        <li><a class="navbar-link" href="https://github.com/syncthing/syncthing" target="_blank"><span class="fas fa-wrench"></span>&nbsp;<span translate>Source Code</span></a></li>
-        <li><a class="navbar-link" href="https://twitter.com/syncthing" target="_blank"><span class="fab fa-twitter"></span>&nbsp;<span translate>Twitter</span></a></li>
-      </ul>
-    </div>
-  </nav>
 
   <ng-include src="'syncthing/core/networkErrorDialogView.html'"></ng-include>
   <ng-include src="'syncthing/core/httpErrorDialogView.html'"></ng-include>
