@@ -33,6 +33,7 @@ angular.module('syncthing.core')
         $scope.reportData = {};
         $scope.reportDataPreview = '';
         $scope.reportPreview = false;
+        $scope.deletedFileNames = [];
         $scope.folders = {};
         $scope.seenError = '';
         $scope.upgradeInfo = null;
@@ -81,6 +82,17 @@ angular.module('syncthing.core')
             bytes: 0,
             directories: 0,
             files: 0
+        };
+
+
+
+        $scope.getDeletedFileNames = function () {
+            return $http.get(urlbase + '/folder/deletedFileNames?folder=' + encodeURIComponent($scope.restoreVersions.folder))
+                .then(function (response) {
+                    return response.data.deletedFileNames;
+                }, function () {
+                    return [];
+                });
         };
 
         $(window).bind('beforeunload', function () {
@@ -2682,7 +2694,12 @@ angular.module('syncthing.core')
                             $scope.restoreVersions.versions = data;
                         });
 
-                    $q.all([dataReceived, modalShown.promise]).then(function () {
+                    var deletedFileNamesReceived = $scope.getDeletedFileNames()
+                        .then(function (deletedFileNames) {
+                            $scope.deletedFileNames = deletedFileNames;
+                        });
+
+                    $q.all([dataReceived, deletedFileNamesReceived, modalShown.promise]).then(function () {
                         $timeout(function () {
                             if (closed) {
                                 resetRestoreVersions();
@@ -2735,6 +2752,10 @@ angular.module('syncthing.core')
                                     var scope = $rootScope.$new(true);
                                     scope.key = node.key;
                                     scope.restoreVersions = $scope.restoreVersions;
+                                    scope.deletedFileNames = $scope.deletedFileNames;
+                                    scope.isFileDeleted = function (key) {
+                                        return scope.deletedFileNames.some((elem) => elem.replace(/\\/g, '/') === key);
+                                    }
 
                                     $tdList.eq(1).html(
                                         $compile(template)(scope)

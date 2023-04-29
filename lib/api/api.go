@@ -278,6 +278,7 @@ func (s *service) Serve(ctx context.Context) error {
 	restMux.HandlerFunc(http.MethodGet, "/rest/system/debug", s.getSystemDebug)               // -
 	restMux.HandlerFunc(http.MethodGet, "/rest/system/log", s.getSystemLog)                   // [since]
 	restMux.HandlerFunc(http.MethodGet, "/rest/system/log.txt", s.getSystemLogTxt)            // [since]
+	restMux.HandlerFunc(http.MethodGet, "/rest/folder/deletedFileNames", s.getDeletedFileNames)
 
 	// The POST handlers
 	restMux.HandlerFunc(http.MethodPost, "/rest/db/prio", s.postDBPrio)                          // folder file
@@ -974,6 +975,40 @@ func (s *service) getDBFile(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 }
+
+// brook get delete files names func endpoint logic
+func (s *service) getDeletedFileNames(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+	folder := qs.Get("folder")
+
+	snap, err := s.model.DBSnapshot(folder)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	defer snap.Release()
+
+	var deletedFileNames []string
+	traverseDeletedFiles(snap, protocol.LocalDeviceID, "", &deletedFileNames)
+
+	sendJSON(w, map[string]interface{}{
+		"deletedFileNames": deletedFileNames,
+	})
+}
+
+func traverseDeletedFiles(snap *db.Snapshot, device protocol.DeviceID, prefix string, deletedFileNames *[]string) {
+	snap.WithHave(device, func(fi protocol.FileIntf) bool {
+		if strings.HasPrefix(fi.FileName(), prefix) {
+			if fi.IsDeleted() {
+				*deletedFileNames = append(*deletedFileNames, fi.FileName())
+			} else if fi.IsDirectory() {
+				traverseDeletedFiles(snap, device, fi.FileName()+string(os.PathSeparator), deletedFileNames)
+			}
+		}
+		return true
+	})
+}
+
 
 func (s *service) getDebugFile(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()

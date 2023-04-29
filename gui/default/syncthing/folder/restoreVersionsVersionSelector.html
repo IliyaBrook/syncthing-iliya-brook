@@ -1,5 +1,12 @@
 <div class="dropdown pull-right">
-  <button class="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown">
+  <span ng-if="isFileDeleted(key)">File was deleted&#10071;</span>
+  <button
+          class="btn btn-default btn-xs dropdown-toggle"
+          type="button"
+          data-toggle="dropdown"
+          ng-style="{'background-color': isFileDeleted(key) ? '#df3d3d' : '', 'color': isFileDeleted(key) ? '#ffffff' : 'black'}"
+
+  >
     <span ng-if="!restoreVersions.selections[key]" translate>Do not restore</span>
     <span ng-if="restoreVersions.selections[key]">{{ restoreVersions.selections[key] | date:"yyyy/MM/dd HH:mm:ss" }}</span>
     <span class="caret"></span>
