@@ -9,6 +9,7 @@ package fs
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -50,6 +51,8 @@ type BasicFilesystem struct {
 	userCache       *userCache
 	groupCache      *groupCache
 }
+
+
 
 type userCache = valueCache[string, *user.User]
 type groupCache = valueCache[string, *user.Group]
@@ -105,9 +108,53 @@ func newBasicFilesystem(root string, opts ...Option) *BasicFilesystem {
 // package. If the relative path somehow causes the final path to escape the root
 // directory, this returns an error, to prevent accessing files that are not in the
 // shared directory.
+
+
 func (f *BasicFilesystem) rooted(rel string) (string, error) {
 	return rooted(rel, f.root)
 }
+
+func (f *BasicFilesystem) Copy(src, dst string) error {
+	srcPath, err := f.rooted(src)
+	if err != nil {
+		return err
+	}
+
+	dstPath, err := f.rooted(dst)
+	if err != nil {
+		return err
+	}
+
+	srcFile, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	srcFileInfo, err := srcFile.Stat()
+	if err != nil {
+		return err
+	}
+
+	err = dstFile.Chmod(srcFileInfo.Mode())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
 func rooted(rel, root string) (string, error) {
 	// The root must not be empty.
@@ -124,6 +171,8 @@ func rooted(rel, root string) (string, error) {
 
 	return filepath.Join(root, rel), nil
 }
+
+
 
 func (f *BasicFilesystem) unrooted(path string) string {
 	return rel(path, f.root)

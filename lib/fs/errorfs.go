@@ -14,11 +14,12 @@ import (
 )
 
 type errorFilesystem struct {
-	err    error
 	fsType FilesystemType
 	uri    string
+	err    error
 }
 
+func (fs *errorFilesystem) Copy(_, _ string) error { return fs.err }
 func (fs *errorFilesystem) Chmod(_ string, _ FileMode) error { return fs.err }
 func (fs *errorFilesystem) Lchown(_, _, _ string) error      { return fs.err }
 func (fs *errorFilesystem) Chtimes(_ string, _ time.Time, _ time.Time) error {

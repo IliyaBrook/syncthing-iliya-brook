@@ -76,6 +76,7 @@ type Filesystem interface {
 	// Used for unwrapping things
 	underlying() (Filesystem, bool)
 	wrapperType() filesystemWrapperType
+	Copy(src, dst string) error
 }
 
 // The File interface abstracts access to a regular file, being a somewhat
@@ -251,8 +252,8 @@ func NewFilesystem(fsType FilesystemType, uri string, opts ...Option) Filesystem
 	switch fsType {
 	case FilesystemTypeBasic:
 		fs = newBasicFilesystem(uri, opts...)
-	case FilesystemTypeFake:
-		fs = newFakeFilesystem(uri, opts...)
+	//case FilesystemTypeFake:
+	//	fs = newFakeFilesystem(uri, opts...)
 	default:
 		l.Debugln("Unknown filesystem", fsType, uri)
 		fs = &errorFilesystem{

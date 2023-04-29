@@ -1,3 +1,16 @@
+## Cloned Project Notice
+
+This repository is a clone of the original Syncthing project with some custom modifications. The changes made to this cloned version include:
+
+1. Improved search functionality in versioning using regular regexp.
+2. When a file is deleted, it is marked as deleted until it is restored.
+3. The versioning staggered logic has been modified; now when restoring a file, the file is not overwritten. Instead, a copy of the restored file is created with the date and time added to the end of the name.
+
+For any questions or concerns related to these modifications, please contact iliyabrook1987@gmail.com.
+
+---
+
+
 [![Syncthing][14]][15]
 
 ---

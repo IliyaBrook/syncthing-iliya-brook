@@ -670,9 +670,12 @@ func (fs *fakeFS) SameFile(fi1, fi2 FileInfo) bool {
 	return ok && fi1.ModTime().Equal(fi2.ModTime()) && fi1.Mode() == fi2.Mode() && fi1.IsDir() == fi2.IsDir() && fi1.IsRegular() == fi2.IsRegular() && fi1.IsSymlink() == fi2.IsSymlink() && fi1.Owner() == fi2.Owner() && fi1.Group() == fi2.Group()
 }
 
-func (fs *fakeFS) PlatformData(name string, scanOwnership, scanXattrs bool, xattrFilter XattrFilter) (protocol.PlatformData, error) {
-	return unixPlatformData(fs, name, fs.userCache, fs.groupCache, scanOwnership, scanXattrs, xattrFilter)
-}
+
+// brook is a fake filesystem that is used for testing,
+// comment for now to avoid breaking the build
+//func (fs *fakeFS) PlatformData(name string, scanOwnership, scanXattrs bool, xattrFilter XattrFilter) (protocol.PlatformData, error) {
+//	return unixPlatformData(fs, name, fs.userCache, fs.groupCache, scanOwnership, scanXattrs, xattrFilter)
+//}
 
 func (*fakeFS) underlying() (Filesystem, bool) {
 	return nil, false
